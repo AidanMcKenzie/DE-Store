@@ -6,7 +6,7 @@ public class UILayer
 	static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 	static DEAppLayer appLayer;
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws ClassNotFoundException
 	{
 		// Create the data layer
 		DEDataLayer dataLayer = new DEDataLayer();
@@ -99,7 +99,7 @@ public class UILayer
 		System.out.println("\n");
 	}
 	
-	private static void changePrice() throws IOException
+	private static void changePrice() throws IOException, ClassNotFoundException
 	{
 		
 		// Prompt and get the Product ID
@@ -154,7 +154,19 @@ public class UILayer
 		System.out.print("Enter choice: ");
 		int choice = Integer.parseInt(input.readLine());
 		
-		appLayer.buyNowPayLater(choice);
+		switch (choice)
+		{
+		case 1:
+			System.out.println("\nPlease visit the website Enabling, using the URL 'http://www.enabling.money/financing'");
+			break;
+		case 2:
+			System.out.println("Customer not opted in.");
+			break;
+		default:
+			// Another value was entered.  Display error message
+			System.out.println("Invalid choice.");
+			break;
+		}
 	}
 	
 	
@@ -174,6 +186,26 @@ public class UILayer
 		String result = appLayer.produceReport();
 		// Display result
 		System.out.println("\n" + result);
+		
+		System.out.println("\nPrint the details of the last 10 purchases?");
+		System.out.println("1) Yes");
+		System.out.println("2) No");
+		System.out.print("Enter choice: ");
+		int choice = Integer.parseInt(input.readLine());
+		
+		switch(choice)
+		{
+		case 1:
+			// Fetch details for a product
+			appLayer.printPurchases();
+			break;
+		case 2:
+			System.out.println("\n");
+			break;
+		default:
+			System.out.println("\n");
+			break;
+		}
 	}
 
 }

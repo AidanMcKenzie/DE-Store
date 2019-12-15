@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -5,7 +6,7 @@ public interface DEDataLayerInterface
 {
 	public Product getProduct(String productID);
 	
-	public boolean changePrice(String productID, String newPrice);
+	public boolean changePrice(String productID, String newPrice) throws ClassNotFoundException, IOException;
 	
 	public boolean applySale(String productID, String selectedSale);
 	
@@ -20,4 +21,6 @@ public interface DEDataLayerInterface
 	public boolean placeOnLoyaltyCard(int customerID);
 
 	public HashMap<String, String> produceReport();
+
+	public void printPurchases();
 }

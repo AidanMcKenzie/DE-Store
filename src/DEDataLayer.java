@@ -99,36 +99,59 @@ public class DEDataLayer implements DEDataLayerInterface
 		return null;
 	}
 	
-	public boolean changePrice(String productID, String newPrice) 
+	public boolean changePrice(String productID, String newPrice) throws ClassNotFoundException, IOException 
 	{	
+		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 		BigDecimal newPriceNum = new BigDecimal(newPrice);
 		
-		try
+		System.out.println("\nOnly managers can control the price of a product");
+		System.out.print("\nEnter username: ");
+		String user = input.readLine();
+		
+		System.out.print("\nEnter password: ");
+		String pass = input.readLine();
+		
+		System.out.print("\nThese are: " + user + " " + pass);
+		
+		if (user.equals("manager") && pass.equals("manager")) 
 		{
-			Connection conn = startConnection();
+			try
+			{
 
-			Statement statement = conn
-					.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
-							ResultSet.CONCUR_UPDATABLE);
-
-			String query = "SELECT * FROM products WHERE PRODUCT_ID = '"
-					+ productID + "'";
-
-			ResultSet results = statement.executeQuery(query);
-
-			if (results.next()) {
-				results.first();
-				results.updateBigDecimal("PRICE", newPriceNum);
-				results.updateRow();
-				return true;
+				Class.forName("com.mysql.cj.jdbc.Driver");
+				// First we need to establish a connection to the database
+				Connection conn = DriverManager
+								   .getConnection("jdbc:mysql://localhost:3308/de_store?user=user&password=user");
+		
+	
+				Statement statement = conn
+						.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
+								ResultSet.CONCUR_UPDATABLE);
+	
+				String query = "SELECT * FROM products WHERE PRODUCT_ID = '"
+						+ productID + "'";
+	
+				ResultSet results = statement.executeQuery(query);
+	
+				if (results.next()) {
+					results.first();
+					results.updateBigDecimal("PRICE", newPriceNum);
+					results.updateRow();
+					return true;
+				}
+				
+			} 
+			catch (SQLException sqe) 
+			{
+				System.err.println("Error in SQL Update");
+				System.err.println(sqe.getMessage());
+				System.exit(-1);
 			}
-			
-		} catch (SQLException sqe) {
-			System.err.println("Error in SQL Update");
-			System.err.println(sqe.getMessage());
-			System.exit(-1);
 		}
-
+		else
+		{
+			System.out.println("Incorrect credentials.");
+		}
 		return false;
 	}
 
@@ -254,8 +277,6 @@ public class DEDataLayer implements DEDataLayerInterface
 			// Execute the statement
 			statement.executeUpdate(sql);	
 			
-			System.out.println("Stock reduced by one");
-			
 			sql = "SELECT price FROM products WHERE product_id = " + productID;
 			
 			ResultSet results = statement.executeQuery(sql);
@@ -273,7 +294,6 @@ public class DEDataLayer implements DEDataLayerInterface
 			// Execute the statement
 			statement.executeUpdate(sql);
 			
-			System.out.println("Transaction record added");
 			// Release resources held by the statement
 			statement.close();
 			// Release resources held by the connection.  This also ensures that the INSERT completes
@@ -403,11 +423,7 @@ public class DEDataLayer implements DEDataLayerInterface
 				totalRevenue = results.getInt("SUM(cost)");
 			}
 			
-			//System.out.println("No of Purch " + noOfPurchases);
-			//System.out.println("Rev " + totalRevenue);
-			
-			
-			
+
 			sql = "SELECT MAX(mycount) FROM (select PRODUCT_ID, count(product_id) mycount from transactions group by product_id) AS subqueryalias";
 			
 			results = statement.executeQuery(sql);	
@@ -418,7 +434,7 @@ public class DEDataLayer implements DEDataLayerInterface
 			}
 			
 			statement.close();
-			// Release resources held by the connection.  This also ensures that the INSERT completes
+			// Release resources held by the connection. This also ensures that the INSERT completes
 			conn.close();
 			
 			reportStatistics.put("purchases", String.valueOf(noOfPurchases));
@@ -461,5 +477,41 @@ public class DEDataLayer implements DEDataLayerInterface
 			System.exit(-1);
 		}
 		return null;
+	}
+
+	public void printPurchases() 
+	{
+		try
+		{
+			Connection conn = startConnection();
+			// Create a new SQL statement
+			Statement statement = conn.createStatement();
+			// Build the INSERT statement
+			String sql = "SELECT TRANSACTION_ID, "
+					   + "(SELECT PRODUCT_NAME FROM products where PRODUCT_ID = transactions.PRODUCT_ID) as Product, "
+					   + "(SELECT NAME FROM customers where CUSTOMER_ID = transactions.CUSTOMER_ID) as Customer, "
+					   + "COST, DATE_FORMAT(DATE_PURCHASED, \"%d/%m/%Y, %T\") as Date FROM transactions LIMIT 10";
+			
+			ResultSet results = statement.executeQuery(sql);	
+			
+			while (results.next())
+			{
+				System.out.println("-------------------------");
+				System.out.println("TRANSACTION ID: " + results.getString("TRANSACTION_ID"));
+				System.out.println("Product: " + results.getString("Product"));
+				System.out.println("Customer: " + results.getString("Customer"));
+				System.out.println("Cost: £" + results.getString("Cost"));
+				System.out.println("Date Purchased: " + results.getString("Date"));
+				System.out.println("-------------------------");
+				System.out.println("\n");
+			}
+		}
+		catch (SQLException sqe) 
+		{
+			System.err.println("Error in SQL Update");
+			System.err.println(sqe.getMessage());
+			System.exit(-1);
+		}
+		
 	}
 }

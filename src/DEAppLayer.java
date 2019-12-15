@@ -45,24 +45,15 @@ public class DEAppLayer implements DEAppLayerInterface
 			productSales = "None";
 		}
 		
-		// If the product exists, return the details
-		if (product != null)
-		{
-			return "Product ID: " + product.getProductID() + "\n" + 
-				   "Product Name: " + product.getProductName() + "\n" + 
-				   "Price: £" + product.getPrice() + "\n" +
-				   "Number of Items in Stock: " + product.getStock() + "\n" +
-				   "Sales this Product is Included in: " + productSales;
-		}
-		else
-		{
-			// Else inform the user the product does not exist
-			return "Product with the ID  " + productID + " does not exist";
-		}
+		return "Product ID: " + product.getProductID() + "\n" + 
+			   "Product Name: " + product.getProductName() + "\n" + 
+			   "Price: £" + product.getPrice() + "\n" +
+			   "Number of Items in Stock: " + product.getStock() + "\n" +
+			   "Sales this Product is Included in: " + productSales;
 	}
 	
 	// Change the price of the Product
-	public String changePrice(String productID, String newPrice) 
+	public String changePrice(String productID, String newPrice) throws ClassNotFoundException, IOException 
 	{
 		// Attempt an update of the database based on the supplied parameters
 		boolean updateDB = dataLayer.changePrice(productID, newPrice);
@@ -70,7 +61,7 @@ public class DEAppLayer implements DEAppLayerInterface
 		// If update was successful, notify the user
 		if (updateDB)
 		{
-			return "Product Price Changed";
+			return "\nProduct Price Changed";
 		}
 		else
 		{
@@ -121,6 +112,7 @@ public class DEAppLayer implements DEAppLayerInterface
 		{
 			// Alert user that product is low stock
 			Iterator i = lowStockProducts.iterator();
+			System.out.println("\nSTOCK WARNING");
 	        System.out.println("The following products are low stock:");
 		    while (i.hasNext()) 
 		    {
@@ -190,7 +182,7 @@ public class DEAppLayer implements DEAppLayerInterface
 		switch (choice)
 		{
 		case 1:
-			return "Now linking to Enabling website...";
+			return "Please visit the website Enabling, using the URL 'http://www.enabling.money/financing', and use the Transaction ID: " + "[INSERT]";
 		case 2:
 			return "Customer not opted in.";
 		default:
@@ -214,6 +206,11 @@ public class DEAppLayer implements DEAppLayerInterface
 		{
 			return "Report could not be produced";
 		}
+	}
+
+	public void printPurchases() {
+		dataLayer.printPurchases();
+		
 	}
 
 }
