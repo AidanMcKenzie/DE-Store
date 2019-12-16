@@ -6,6 +6,5 @@ public interface DEAppLayerInterface
 	
 	public String changePrice(String productID, String newPrice) throws ClassNotFoundException, IOException;
 	
-	public String applySale(String productID, String selectedSale);
-	
+	public String applySale(String productID, String selectedSale);	
 }

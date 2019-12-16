@@ -9,7 +9,6 @@ public class Product
 	private String price;
 	private ArrayList<String> sales;
 	
-
 	public Product(String productID, String productName, String stock, String price, ArrayList<String> sales)
 	{
 		this.productID = productID;
@@ -43,5 +42,4 @@ public class Product
 	{
 		return Arrays.toString(sales.toArray());
 	}
-	
 }
