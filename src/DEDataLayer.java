@@ -111,8 +111,6 @@ public class DEDataLayer implements DEDataLayerInterface
 		System.out.print("\nEnter password: ");
 		String pass = input.readLine();
 		
-		System.out.print("\nThese are: " + user + " " + pass);
-		
 		if (user.equals("manager") && pass.equals("manager")) 
 		{
 			try
@@ -268,6 +266,10 @@ public class DEDataLayer implements DEDataLayerInterface
 	{
 		try
 		{
+			DecimalFormat decimals = new DecimalFormat("#.##");
+			double cost = 0;
+			double deliveryCharge;
+			
 			Connection conn = startConnection();
 
 			// Create a new SQL statement
@@ -281,13 +283,37 @@ public class DEDataLayer implements DEDataLayerInterface
 			
 			ResultSet results = statement.executeQuery(sql);
 			
-			int cost = 0;
+			
 			
 			while (results.next())
 			{
-				cost = results.getInt("PRICE");
+				cost = results.getDouble("PRICE");
 			}
 			
+			System.out.println("\n\nProduct Price: £" + decimals.format(cost));
+			
+			
+			sql = "SELECT loyalty_card FROM customers WHERE customer_id = " + customerID;
+			
+			results = statement.executeQuery(sql);
+			
+			
+			while (results.next())
+			{
+				if (results.getInt("loyalty_card") == 1)
+				{
+					cost = cost*0.9;
+					System.out.println("\nCustomer is applied on Loyalty Card scheme. Total price reduced by 10%.");
+					System.out.println("\nPrice after Loyalty Discount: £" + decimals.format(cost));
+				}
+			}
+			
+			// Additional delivery charge is 5% of the product price
+			deliveryCharge = cost*0.05;
+			System.out.println("\nDelivery Charge: £" + decimals.format(deliveryCharge));
+			
+			cost = cost + deliveryCharge;
+			System.out.println("\nTOTAL COST: £" + decimals.format(cost));
 			
 			sql = "INSERT INTO transactions (PRODUCT_ID, CUSTOMER_ID, COST) " +
 					"VALUES ('" + productID + "', '" + customerID + "', '" + cost + "')";
@@ -319,6 +345,7 @@ public class DEDataLayer implements DEDataLayerInterface
 		try
 		{
 			int noOfPurchases = 0;
+			int customerHasCard = 0;
 			Connection conn = startConnection();
 
 			// Create a new SQL statement
@@ -332,8 +359,16 @@ public class DEDataLayer implements DEDataLayerInterface
 			{
 				noOfPurchases = results.getInt("COUNT(transaction_id)");
 			}
+				
 			
-			System.out.println("No of Purchases: " + noOfPurchases);
+			sql = "SELECT loyalty_card FROM customers WHERE customer_id = " + customerID;
+			// Execute the statement
+			results = statement.executeQuery(sql);	
+			
+			while (results.next())
+			{
+				customerHasCard = results.getInt("loyalty_card");
+			}
 			
 			// Release resources held by the statement
 			statement.close();
@@ -342,14 +377,20 @@ public class DEDataLayer implements DEDataLayerInterface
 			
 			if (noOfPurchases > 2)
 			{
-				return true;
+				if (customerHasCard != 1)
+				{
+					return true;
+				}
+				else
+				{
+					System.out.println("\nCustomer is already enrolled on the Loyalty Card scheme.");
+					return false;
+				}
 			}
 			else
 			{
 				return false;
-			}
-				
-			
+			}		
 		} 
 		catch (SQLException sqe) 
 		{
